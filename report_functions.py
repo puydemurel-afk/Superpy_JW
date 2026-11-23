@@ -46,19 +46,23 @@ def report(args):
             for i in inventory:
                 print(f"{i["product_name"]}\t\t\t\t{i["count"]}\t{i["buy_price"]}\t{i["expiration_date"]}")
             if args.export == True:
+                # maak van de inventory een pdf file
                 datum_tijd = datetime.strftime(datetime.now(),"%Y-%m-%d_%H%M%S")
+                # unike naam door datum en tijd toe te voegen
                 doc_filename = "Report-inventory_" + datum_tijd + ".pdf"
+                # pagina setup
                 doc = SimpleDocTemplate(doc_filename, pagesize=A4)
                 styles = getSampleStyleSheet()
-
                 title = Paragraph("Report inventory JW's Shop", styles['Title'])
 
+                # data voor tabel voorbereiden
                 table_data = [
                     ['Product', 'Aantal', 'Prijs', 'Expiration date']
                 ]
 
                 new_dict = {}
                 bar_new_dict = {}
+                # data voor tabel en bar chart maken
                 for i in inventory:
                     temp_table_data = []
                     temp_dict_data = {}
@@ -77,16 +81,19 @@ def report(args):
                     bar_new_dict = bar_temp_dict_data
 
                 bar_data = []
+                # data toevoegen voor alle producten in de voorraad
                 for i in inventory:
                     temp_list = [i["product_name"]] + temp_dict_data[i["product_name"]]
                     bar_data.append(bar_temp_dict_data[i["product_name"]])
                     table_data.append(temp_list)
 
+                # stijl en font's bepalen van de tabel
                 table = Table(table_data, style=[
                     ('GRID', (0,0),(-1,-1), 0.5, colors.grey),
                     ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold')
                 ])
 
+                # de chart voorbereiden, stijl en settings voor de assen
                 chart = Drawing(400,200)
 
                 bar_chart = VerticalBarChart()
@@ -97,7 +104,7 @@ def report(args):
                 bar_chart.valueAxis.valueStep = max(max(x) / 5 for x in bar_chart.data)
 
                 chart.add(bar_chart)
-
+                # maak het document en schrijf het naar een pdf file
                 doc.build([title, Spacer(0,12), table, chart])
 
                 print("Voorraad in PDF file opgeslagen")
