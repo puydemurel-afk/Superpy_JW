@@ -131,7 +131,6 @@ def sell(args):
         kassabon.drawString(10,800, "JW's Shop")
         kassabon.drawString(10,785,"tinytown NL +31612345678")
         kassabon.drawString(10,770,"KASSABON")
-        #kassabon.drawString(10,755," ")
         kassabon.drawString(10,740,datum_tijd)
         kassabon.drawString(10,725,args.product_name)
         totaalprijs = "Totaal (incl btw) " + str(args.price)

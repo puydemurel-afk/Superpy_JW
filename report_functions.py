@@ -94,38 +94,6 @@ def report(args):
                 styles = getSampleStyleSheet()
                 title = Paragraph("Report inventory JW's Shop", styles['Title'])
 
-                # data voor tabel voorbereiden
-                #table_data = [
-                #    ['Product', 'Aantal', 'Prijs', 'Expiration date']
-                #]
-
-                #new_dict = {}
-                #bar_new_dict = {}
-                # data voor tabel en bar chart maken
-                #for i in inventory:
-                #    temp_table_data = []
-                #    temp_dict_data = {}
-                #    bar_temp_table_data = []
-                #    bar_temp_dict_data = {}
-
-                #    temp_table_data.append(i["count"])
-                #    temp_table_data.append(i["buy_price"])
-                #    temp_table_data.append(i["expiration_date"])
-                #    bar_temp_table_data.append(int(i["count"]))
-                #    bar_temp_table_data.append(float(i["buy_price"]))
-
-                #    temp_dict_data = new_dict | ({i["product_name"]: temp_table_data})
-                #    bar_temp_dict_data = bar_new_dict | ({i["product_name"]: bar_temp_table_data})
-                #    new_dict = temp_dict_data
-                #    bar_new_dict = bar_temp_dict_data
-
-                #bar_data = []
-                # data toevoegen voor alle producten in de voorraad
-                #for i in inventory:
-                #    temp_list = [i["product_name"]] + temp_dict_data[i["product_name"]]
-                #    bar_data.append(bar_temp_dict_data[i["product_name"]])
-                #    table_data.append(temp_list)
-
                 # stijl en font's bepalen van de tabel
                 table = Table(table_data, style=[
                     ('GRID', (0,0),(-1,-1), 0.5, colors.grey),
@@ -234,18 +202,18 @@ def report(args):
                 for row_s in rows_sold:
                     if date.strptime(row_s["sell_date"],"%Y-%m-%d") == reken_datum:
                         revenue = revenue + float(row_s["sell_price"])
-                        print(f"verkoop prijs : {revenue}")
+                        #print(f"verkoop prijs : {revenue}")
                         for row_b in rows_bought:
                             if row_s["bought_id"] == row_b["id"]:
                                 total_buy_price = total_buy_price + float(row_b["buy_price"])
-                                print(f"aankoopprijs : {total_buy_price}")
+                                #print(f"aankoopprijs : {total_buy_price}")
                                 break
                     profit = profit + (revenue - total_buy_price)
                     revenue = 0
                     total_buy_price =0
-                    print(f"winst : {profit}")
+                    #print(f"winst : {profit}")
                 # print de revenu - omzet
-                print(f"De winst van {reken_datum} is : {profit}")
+                print(f"De winst van {reken_datum} is : {round(profit,2)}")
         
             if args.yesterday:
                 # opgeslagen datum uit datum.txt met 1 dag verminderen.
@@ -262,7 +230,7 @@ def report(args):
                     revenue = 0
                     total_buy_price =0
                 # print de revenu - omzet
-                print(f"De winst van {reken_datum} is : {profit}")
+                print(f"De winst van {reken_datum} is : {round(profit,2)}")
         
             if args.date:
                 print(f"Winst tonen van periode : {args.date}")
@@ -274,15 +242,15 @@ def report(args):
                 # met reken periode door de sold database gaan en alle verkopen optellen
                 for row_s in rows_sold:
                     if (date.strptime(row_s["sell_date"],"%Y-%m-%d") >= begin_reken_datum) and (date.strptime(row_s["sell_date"],"%Y-%m-%d") <= eind_reken_datum):
-                        revenue = revenue + float(row_s["sell_price"])
+                        revenue = revenue + round(float(row_s["sell_price"]),2)
                         for row_b in rows_bought:
                             if row_s["bought_id"] == row_b["id"]:
-                                total_buy_price = total_buy_price + float(row_b["buy_price"])
+                                total_buy_price = total_buy_price + round(float(row_b["buy_price"]),2)
                     profit = profit + (revenue - total_buy_price)
                     revenue = 0
                     total_buy_price =0
                 # print de revenu - omzet
-                print(f"De winst van {args.date} is : {profit}")
+                print(f"De winst van {args.date} is : {round(profit,2)}")
 
     if args.report_type == "expired":
         print("Expired product's") 

@@ -1,0 +1,123 @@
+Usage guide : Superpy by JW Wiggers, nov 2026
+
+usage: python.exe -m main [-h] [--set_time SET_TIME] [--advance_time ADVANCE_TIME] [--check_expired] {buy,sell,report} ...
+
+Supermarkt CLI tool
+
+positional arguments:
+  {buy,sell,report}
+    buy                 Used to buy a product (--product_name, --price, --expiration_date, --quantity)
+    sell                Used to sell a product (--product_name, --price)
+    report              Used to report your inventory, revenue or profit (--today, --yesterday, --date yyyy-mm), use --export to export inventory to PDF file
+
+options:
+  -h, --help            show this help message and exit
+  --set_time SET_TIME   specify what date today is
+  --advance_time ADVANCE_TIME
+                        number of days to advance the date
+  --check_expired       check if there are expired products in stock and delete them from stock
+
+
+Er worden diverse bestanden gebruikt :
+  Datum.txt - bestand waar de datum in opgeslagen is die door Superpy wordt gebruikt als huidige datum
+  bought.csv - bestand waar alle aankopen in opgeslagen worden
+  sold.csv - bestand waar alle verkopen in opgeslagen worden
+  stock.csv - bestand waar de actuele voorraad in staat
+  expired_products.csv = bestand waar alle expired producten in opgeslagen worden.
+
+
+Datum instellen :
+  main --set_time yyyy-mm-dd 
+  (bv 2026-12-01), stel 1 dec 2026 in als huidige datum
+
+  main --advance_time x
+  zet de huidige datum x dagen verder, waarbij x ook negatief mag zijn (terug in de tijd)
+
+  De datum wordt in het bestand datum.txt bewaard.
+
+---------------------------------------------------
+Aankopen :
+  main buy (--product_name, --price, --expiration_date, --quantity)
+  main buy --product_name orange --price 0.7 --expiration_date 2027-02-12 --quantity 4
+    --product_name = naam van het product dat aangekocht wordt
+    --price = de prijs van het product (float)
+    --expiration_date = de houdbaarheids datum van het product, yyyy-mm-dd
+    --quantity = de aantal producten dat gekocht wordt, (integer)
+
+  Als er iets gekocht wordt, wordt tegelijkertijd de voorraad aangevuld met de aankoop (stock.csv)
+  Er wordt gecontroleerd of de houdbaarheids datum ouder is dan de huidige datum, anders is product al over de datum.
+
+---------------------------------------------------
+verkopen :
+  main sell (--product_name, --price)
+  main sell --product_name orange --price 2
+    --product_name = naam van het product dat verkocht wordt
+    --price = de prijs waar het product voor verkocht wordt (float)
+
+  Als er iets verkocht wordt, wordt er eerst gekeken of het product wel in voorraad is, anders melding dat het niet voorradig is.
+  Het verkochte product wordt uit de voorraad gehaald (stock.csv) en in de lijst met gekochte producten gezet(sold.csv).
+  Er wordt een simpele kassabon gemaakt die in een pdf file wordt geschreven.
+
+---------------------------------------------------
+Check de houdbaarheis datum van producten in de voorraad :
+  main --check_expired
+
+  Deze optie kijkt of er in de voorraad producten aanwezig zijn waarbij de houdbaarheids datum verlopen is.
+  Het product wordt dan uit de voorraad gehaald (stock.csv) en in de lijst met verlopen producten geplaatst (expired_products.csv)
+
+---------------------------------------------------
+Rapportage :
+  main report inventory, revenue or profit (--today, --yesterday, --date yyyy-mm), use --export to export inventory to pdf file
+  main report inventory --export
+    --export = Deze optie maakt een pdf file van de voorraad en schrijft deze in een unieke filenaam (datum en tijd stamp)
+
+  Wordt gebruikt om de voorraad te tonen.  Dit is altijd de actuele voorraad, er kan geen datum manipulatie plaatsvinden.
+
+  INVENTORY
+  Product                         Aantal  Prijs   Expiration date
+  juice                           5       1.2     2031-11-15
+  grapes                          3       1.1     2027-01-01
+  apple                           8       1.5     2031-12-03
+  orange                          10      2.0     2031-12-03
+                                                        ┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━┓                                                         
+                                                        ┃ Product ┃ Aantal ┃ Prijs ┃ Expiration date ┃                                                         
+                                                        ┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━┩                                                         
+                                                        │ Product │ Aantal │ Prijs │ Expiration date │                                                         
+                                                        │ juice   │ 5      │ 1.2   │ 2031-11-15      │                                                         
+                                                        │ grapes  │ 3      │ 1.1   │ 2027-01-01      │                                                         
+                                                        │ apple   │ 8      │ 1.5   │ 2031-12-03      │                                                         
+                                                        │ orange  │ 10     │ 2.0   │ 2031-12-03      │                                                         
+                                                        └─────────┴────────┴───────┴─────────────────┘ 
+
+  main report revenue (--today, --yesterday, --date yyyy-mm)
+  main report revenue --today
+    Toont de omzet van vandaag (vandaag is de datum uit datum.txt)
+    De omzet van 2026-12-04 is : 400.0
+
+  main report revenue --yesterday
+    Toont de omzet van gisteren (vandaag is de datum uit datum.txt, gisteren is 1 dag terug)
+    De omzet van 2026-12-03 is : 0
+
+  main report revenue --date 2026-11
+    Toont de omzet van een specifieke periode (yyyy-mm), in dit voorbeeld de omzet over de maand november 2026
+    Omzet tonen van periode : 2026-12
+    reken datum : van 2026-12-01 tot 2026-12-31
+    De omzet van 2026-12 is : 400.0
+
+
+  main report profit (--today, --yesterday, --date yyyy-mm)
+  main report profit --today
+    Toont de winst van vandaag (vandaag is de datum uit datum.txt)
+    De winst van 2026-12-04 is : 128.0
+
+  main report profit --yesterday
+    Toont de winst van gisteren (vandaag is de datum uit datum.txt, gisteren is 1 dag terug)
+    De winst van 2026-12-03 is : 0
+
+  main report profit --date 2026-11
+    Toont de winst van een specifieke periode (yyyy-mm), in dit voorbeeld de winst over de maand november 2026
+    Winst tonen van periode : 2026-12
+    reken datum : van 2026-12-01 tot 2026-12-31
+    De winst van 2026-12 is : 128.0
+
+   ---------------------------------------------------
