@@ -7,12 +7,18 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Spacer, Paragraph, Table, SimpleDocTemplate
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.shapes import Drawing
+from rich import print
+from rich.align import Align
+from rich.console import Console
+from rich.live import Live
+from rich.table import Table as tb
 
 
 def report(args):
     # Inventory - voorraad
     if args.report_type == "inventory":
-        print("INVENTORY")
+        # print de titel en de header van de tabel
+        print("[bold green]INVENTORY[/bold green]")
         print("Product                         Aantal  Prijs   Expiration date")
         # voorraad zit in de file stock.csv
         with open('stock.csv', 'r') as stock_file:
@@ -43,8 +49,41 @@ def report(args):
                         inventory[seek_row]["count"] = str(count)
                     else:
                         inventory.append(add_inventory)
+            # print de waardes van de tabel
             for i in inventory:
-                print(f"{i["product_name"]}\t\t\t\t{i["count"]}\t{i["buy_price"]}\t{i["expiration_date"]}")
+                print(f"[italic]{i["product_name"]}[/italic]\t\t\t\t{i["count"]}\t{i["buy_price"]}\t{i["expiration_date"]}")
+
+            # data voor tabel voorbereiden
+            table_data = [
+                ['Product', 'Aantal', 'Prijs', 'Expiration date']
+            ]
+            new_dict = {}
+            bar_new_dict = {}
+            # data voor tabel en bar chart maken
+            for i in inventory:
+                temp_table_data = []
+                temp_dict_data = {}
+                bar_temp_table_data = []
+                bar_temp_dict_data = {}
+
+                temp_table_data.append(i["count"])
+                temp_table_data.append(i["buy_price"])
+                temp_table_data.append(i["expiration_date"])
+                bar_temp_table_data.append(int(i["count"]))
+                bar_temp_table_data.append(float(i["buy_price"]))
+
+                temp_dict_data = new_dict | ({i["product_name"]: temp_table_data})
+                bar_temp_dict_data = bar_new_dict | ({i["product_name"]: bar_temp_table_data})
+                new_dict = temp_dict_data
+                bar_new_dict = bar_temp_dict_data
+
+            bar_data = []
+            # data toevoegen voor alle producten in de voorraad
+            for i in inventory:
+                temp_list = [i["product_name"]] + temp_dict_data[i["product_name"]]
+                bar_data.append(bar_temp_dict_data[i["product_name"]])
+                table_data.append(temp_list)
+
             if args.export == True:
                 # maak van de inventory een pdf file
                 datum_tijd = datetime.strftime(datetime.now(),"%Y-%m-%d_%H%M%S")
@@ -56,36 +95,36 @@ def report(args):
                 title = Paragraph("Report inventory JW's Shop", styles['Title'])
 
                 # data voor tabel voorbereiden
-                table_data = [
-                    ['Product', 'Aantal', 'Prijs', 'Expiration date']
-                ]
+                #table_data = [
+                #    ['Product', 'Aantal', 'Prijs', 'Expiration date']
+                #]
 
-                new_dict = {}
-                bar_new_dict = {}
+                #new_dict = {}
+                #bar_new_dict = {}
                 # data voor tabel en bar chart maken
-                for i in inventory:
-                    temp_table_data = []
-                    temp_dict_data = {}
-                    bar_temp_table_data = []
-                    bar_temp_dict_data = {}
+                #for i in inventory:
+                #    temp_table_data = []
+                #    temp_dict_data = {}
+                #    bar_temp_table_data = []
+                #    bar_temp_dict_data = {}
 
-                    temp_table_data.append(i["count"])
-                    temp_table_data.append(i["buy_price"])
-                    temp_table_data.append(i["expiration_date"])
-                    bar_temp_table_data.append(int(i["count"]))
-                    bar_temp_table_data.append(float(i["buy_price"]))
+                #    temp_table_data.append(i["count"])
+                #    temp_table_data.append(i["buy_price"])
+                #    temp_table_data.append(i["expiration_date"])
+                #    bar_temp_table_data.append(int(i["count"]))
+                #    bar_temp_table_data.append(float(i["buy_price"]))
 
-                    temp_dict_data = new_dict | ({i["product_name"]: temp_table_data})
-                    bar_temp_dict_data = bar_new_dict | ({i["product_name"]: bar_temp_table_data})
-                    new_dict = temp_dict_data
-                    bar_new_dict = bar_temp_dict_data
+                #    temp_dict_data = new_dict | ({i["product_name"]: temp_table_data})
+                #    bar_temp_dict_data = bar_new_dict | ({i["product_name"]: bar_temp_table_data})
+                #    new_dict = temp_dict_data
+                #    bar_new_dict = bar_temp_dict_data
 
-                bar_data = []
+                #bar_data = []
                 # data toevoegen voor alle producten in de voorraad
-                for i in inventory:
-                    temp_list = [i["product_name"]] + temp_dict_data[i["product_name"]]
-                    bar_data.append(bar_temp_dict_data[i["product_name"]])
-                    table_data.append(temp_list)
+                #for i in inventory:
+                #    temp_list = [i["product_name"]] + temp_dict_data[i["product_name"]]
+                #    bar_data.append(bar_temp_dict_data[i["product_name"]])
+                #    table_data.append(temp_list)
 
                 # stijl en font's bepalen van de tabel
                 table = Table(table_data, style=[
@@ -108,6 +147,23 @@ def report(args):
                 doc.build([title, Spacer(0,12), table, chart])
 
                 print("Voorraad in PDF file opgeslagen")
+            # print de tabel in ene format gemaakt met Rich
+            console = Console()
+            table = tb(show_footer=False)
+            table_centered = Align.center(table)
+
+            console.clear()
+
+            with Live(table_centered, console=console, screen=False):
+                table.add_column("Product", no_wrap=True)
+                table.add_column("Aantal", no_wrap=True)
+                table.add_column("Prijs", no_wrap=True)
+                table.add_column("Expiration date", no_wrap=True)
+                for row in table_data:
+                    table.add_row(*row)
+
+                table.width = console.measure(table).maximum
+                table.width = None
 
     # Revenue - omzet
     if args.report_type == "revenue":

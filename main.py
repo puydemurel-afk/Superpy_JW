@@ -6,6 +6,7 @@ from report_functions import *
 from time_functions import *
 from sales_functions import *
 
+
 # Do not change these lines.
 __winc_id__ = "a2bc36ea784242e4989deb157d527ba0"
 __human_name__ = "superpy"
@@ -30,7 +31,7 @@ sell_parser.add_argument("--product_name", type=str, help="specify the product y
 sell_parser.add_argument("--price", type=float, help="specify the price of the product")
 
 # create report parser
-report_parser = subparsers.add_parser("report", help="Used to report your inventory, revenue or profit (--today, --yesterday, --date yyyy-mm)")
+report_parser = subparsers.add_parser("report", help="Used to report your inventory, revenue or profit (--today, --yesterday, --date yyyy-mm), use --export to export inventory to PDF file")
 report_parser.add_argument("report_type", type=str, help="Specify what you want to report")
 report_parser.add_argument("--today","--now", action="store_true")
 report_parser.add_argument("--yesterday", action="store_true")
